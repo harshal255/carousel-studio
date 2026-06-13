@@ -1,0 +1,48 @@
+@font-face {
+  font-family: 'NeueKabelLight';
+  src: url('/fonts/Neue_Kabel_Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NeueKabelBold';
+  src: url('/fonts/Neue_Kabel_Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Drowner';
+  src: url('/fonts/Drowner-Free.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GilroyLight';
+  src: url('/fonts/Gilroy-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GilroyBold';
+  src: url('/fonts/Gilroy-ExtraBold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PTMonoRegular';
+  src: url('/fonts/PTMono-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PTMonoBold';
+  src: url('/fonts/PT Mono Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
