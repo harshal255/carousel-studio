@@ -220,11 +220,11 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           setLogoWidth(saved.logoWidth ?? 24);
           setLogoOpacity(saved.logoOpacity ?? 100);
         } else {
-          loadStarterTemplate(STARTER_TEMPLATES[0]);
+          setSlides([]);
         }
       } catch (e) {
         console.warn('Failed to restore active draft state', e);
-        loadStarterTemplate(STARTER_TEMPLATES[0]);
+        setSlides([]);
       }
     };
     restoreState();
@@ -430,6 +430,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setCarouselSize('portrait');
 
       toast.success('Workspace cleared!');
+      setView('dashboard');
       setDraftsModalOpen(false);
     } catch (err) {
       console.error('Failed to clear workspace:', err);

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useAi } from '../../../context/AiContext';
 import { Slide } from '../../../types';
+import { isVideoUrl } from '../../../utils/helpers';
 
 export const RightSidebar: React.FC = () => {
   const {
@@ -487,7 +488,11 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
                     }}
                     title={img.name || img.file?.name || 'Uploaded image'}
                   >
-                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    {isVideoUrl(img.url) ? (
+                      <video src={img.url} className="w-full h-full object-cover" muted playsInline autoPlay loop />
+                    ) : (
+                      <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    )}
                   </button>
                 ))}
               </div>

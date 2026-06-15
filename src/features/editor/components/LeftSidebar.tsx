@@ -6,7 +6,7 @@ import { saveAs } from 'file-saver';
 import toast from 'react-hot-toast';
 import { useWorkspace } from '../../../context/WorkspaceContext';
 import { useAi } from '../../../context/AiContext';
-import { extractColorsFromImage, colorDistance, downscaleImage } from '../../../utils/helpers';
+import { extractColorsFromImage, colorDistance, downscaleImage, isVideoUrl } from '../../../utils/helpers';
 import { Popover, PopoverTrigger, PopoverContent } from '../../../app/components/ui/popover';
 import { ColorPicker } from '../../../app/components/ui/color-picker';
 import { ImageFile, SavedDraft } from '../../../types';
@@ -186,7 +186,7 @@ export const LeftSidebar: React.FC = () => {
 
     const newImages = await Promise.all(readPromises);
     setImages(prev => [...prev, ...newImages]);
-    toast.success(`Uploaded ${files.length} images in sequence!`);
+    toast.success(`Uploaded ${files.length} files in sequence!`);
   };
 
   const removeImage = (id: string) => {
@@ -281,9 +281,11 @@ export const LeftSidebar: React.FC = () => {
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+    const files = Array.from(e.dataTransfer.files).filter(
+      file => file.type.startsWith('image/') || file.type.startsWith('video/')
+    );
     if (files.length === 0) {
-      toast.error('No valid images dropped');
+      toast.error('No valid images or videos dropped');
       return;
     }
 
@@ -305,7 +307,7 @@ export const LeftSidebar: React.FC = () => {
 
     const newImages = await Promise.all(readPromises);
     setImages(prev => [...prev, ...newImages]);
-    toast.success(`Uploaded ${files.length} dropped images in sequence!`);
+    toast.success(`Uploaded ${files.length} files in sequence!`);
   };
 
   const handleSuggestHooks = async () => {
@@ -320,8 +322,9 @@ export const LeftSidebar: React.FC = () => {
     try {
       let imageParts: any[] = [];
       if (images.length > 0) {
+        const imageOnlyList = images.filter(img => !isVideoUrl(img.url));
         imageParts = await Promise.all(
-          images.map(img =>
+          imageOnlyList.map(img =>
             downscaleImage(img.url, 768).then(base64 => ({
               inlineData: {
                 data: base64.split(',')[1],
@@ -418,7 +421,7 @@ Return ONLY a raw JSON array of objects. No markdown formatting.
 
     try {
       const downscaledImages = await Promise.all(
-        images.map(async (img) => {
+        images.filter(img => !isVideoUrl(img.url)).map(async (img) => {
           const optimizedData = await downscaleImage(img.url, 512);
           return {
             url: optimizedData,
@@ -1071,7 +1074,7 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
             <div className="flex flex-col items-center gap-2">
               <Upload style={{ color: 'rgba(255,255,255,0.40)', width: '20px', height: '20px' }} />
               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.40)', textAlign: 'center' }}>
-                Drop images or click to upload
+                Drop images/videos or click to upload
               </span>
             </div>
           </div>
@@ -1079,7 +1082,7 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,video/*"
             onChange={handleFileUpload}
             className="hidden"
           />
@@ -1091,11 +1094,22 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
                   className="relative aspect-[4/5] rounded overflow-hidden group border border-white/10"
                   title={img.name || img.file?.name || 'Uploaded image'}
                 >
-                  <img
-                    src={img.url}
-                    alt=""
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+                  {isVideoUrl(img.url) ? (
+                    <video
+                      src={img.url}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      muted
+                      playsInline
+                      autoPlay
+                      loop
+                    />
+                  ) : (
+                    <img
+                      src={img.url}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
 
                   {(() => {

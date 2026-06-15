@@ -221,3 +221,16 @@ export const renderTextWithAccent = (text: string | undefined, accentColor: stri
   });
 };
 
+export const isVideoUrl = (url: string | undefined): boolean => {
+  if (!url) return false;
+  if (url.startsWith('data:video/')) return true;
+  const cleanUrl = url.split('?')[0].toLowerCase();
+  return (
+    cleanUrl.endsWith('.mp4') ||
+    cleanUrl.endsWith('.webm') ||
+    cleanUrl.endsWith('.ogg') ||
+    cleanUrl.endsWith('.mov')
+  );
+};
+
+

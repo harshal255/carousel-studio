@@ -2,7 +2,7 @@ import React from 'react';
 import { Heart, Bookmark, Send, MessageSquare, ArrowRight } from 'lucide-react';
 import { Slide } from '../../../types';
 import { useWorkspace } from '../../../context/WorkspaceContext';
-import { renderTextWithAccent, getAccentTintGradient } from '../../../utils/helpers';
+import { renderTextWithAccent, getAccentTintGradient, isVideoUrl } from '../../../utils/helpers';
 
 interface SlideFrameProps {
   slide: Slide;
@@ -49,6 +49,17 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
   const headingFont = getHeadingFont();
   const bodyFont = getBodyFont();
   const totalSlides = slides.length;
+
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    if (isExport || !interactive) return;
+    if (videoRef.current) {
+      videoRef.current.play().catch(err => {
+        console.log("Playback of unmuted video blocked, waiting for user interaction:", err);
+      });
+    }
+  }, [slide.imageUrl, isExport, interactive]);
 
   const renderCtaContent = (targetSlide: Slide, exportMode: boolean = false) => {
     const layout = targetSlide.ctaLayout || 'comment';
@@ -265,15 +276,31 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
           onMouseLeave={interactive ? onPanEnd : undefined}
           className={`absolute inset-0 w-full h-full select-none overflow-hidden ${interactive ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
         >
-          <img
-            src={slide.imageUrl}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            style={{
-              transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
-              transformOrigin: 'center center',
-            }}
-          />
+          {isVideoUrl(slide.imageUrl) ? (
+            <video
+              ref={videoRef}
+              src={slide.imageUrl}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{
+                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
+                transformOrigin: 'center center',
+              }}
+              autoPlay
+              loop
+              playsInline
+              muted={isExport || !interactive}
+            />
+          ) : (
+            <img
+              src={slide.imageUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{
+                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
+                transformOrigin: 'center center',
+              }}
+            />
+          )}
         </div>
       )}
 
@@ -605,7 +632,8 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
                     pointerEvents: 'none',
-                    color: 'rgba(255,255,255,0.9)'
+                    color: 'rgba(255,255,255,0.9)',
+                    overflow: 'hidden'
                   }}>
                     {renderTextWithAccent(slide.headingText || '', accentColor, true)}
                   </div>
