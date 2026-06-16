@@ -280,10 +280,11 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
             <video
               ref={videoRef}
               src={slide.imageUrl}
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              className={`absolute inset-0 w-full h-full object-${slide.imageFit || 'cover'} pointer-events-none`}
               style={{
                 transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
                 transformOrigin: 'center center',
+                opacity: (slide.imageOpacity ?? 100) / 100
               }}
               autoPlay
               loop
@@ -294,10 +295,11 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
             <img
               src={slide.imageUrl}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              className={`absolute inset-0 w-full h-full object-${slide.imageFit || 'cover'} pointer-events-none`}
               style={{
                 transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
                 transformOrigin: 'center center',
+                opacity: (slide.imageOpacity ?? 100) / 100
               }}
             />
           )}

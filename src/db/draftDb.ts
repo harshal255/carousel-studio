@@ -91,6 +91,18 @@ class DraftDB {
       tx.onerror = () => reject(tx.error);
     });
   }
+
+  async getDraft(id: string): Promise<SavedDraft | undefined> {
+    const db = await this.getDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(this.listStore, 'readonly');
+      const store = tx.objectStore(this.listStore);
+      const req = store.get(id);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
 }
 
 export const draftDb = new DraftDB();
+

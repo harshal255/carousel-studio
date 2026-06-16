@@ -80,7 +80,8 @@ export const LeftSidebar: React.FC = () => {
     handleSaveDraftSnapshot,
     getBodyFont,
     aiTool,
-    setAiTool
+    setAiTool,
+    showConfirm
   } = useWorkspace();
 
   const {
@@ -656,43 +657,26 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
         {/* App Title & Navigation */}
         <div className="flex justify-between items-center border-b border-white/5 pb-4">
           <button
-            onClick={async () => {
-              const stateToSave = {
-                brandName,
-                niche,
-                accentColor,
-                fontStyle,
-                images: images.map(img => ({ id: img.id, url: img.url })),
-                slides,
-                currentSlide,
-                gradientHeight,
-                fontSize,
-                bottomPadding,
-                showWordmark,
-                showCoverSlide,
-                showRevealSlide,
-                coverHeading,
-                aiPrompt,
-                topic,
-                selectedHookText,
-                suggestedHooks,
-                generatedCaption,
-                carouselSize,
-                logoUrl,
-                logoMode,
-                logoWidth,
-                logoOpacity
-              };
-              try {
-                // Save state to active store
-                const { draftDb } = await import('../../../db/draftDb');
-                await draftDb.saveActive(stateToSave);
-                loadSavedDraftsList();
-              } catch (err) {
-                console.error('Exit save failed:', err);
+            onClick={() => {
+              if (slides.length > 0) {
+                showConfirm(
+                  'Leave Editor',
+                  'Are you sure you want to return to the Dashboard? Any unsaved edits will be lost.',
+                  () => {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('page');
+                    url.searchParams.delete('id');
+                    window.history.pushState(null, '', url.toString());
+                    setView('dashboard');
+                  }
+                );
+              } else {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('page');
+                url.searchParams.delete('id');
+                window.history.pushState(null, '', url.toString());
+                setView('dashboard');
               }
-              setView('dashboard');
-              toast.success('Project draft autosaved!');
             }}
             className="flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors duration-150 font-bold cursor-pointer"
           >

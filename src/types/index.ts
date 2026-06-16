@@ -16,6 +16,8 @@ export interface Slide {
   imageRotate?: number;
   imageFlipH?: boolean;
   imageFlipV?: boolean;
+  imageFit?: 'cover' | 'contain';
+  imageOpacity?: number;
   headingText?: string;
   subText?: string;
   triggerWord?: string;

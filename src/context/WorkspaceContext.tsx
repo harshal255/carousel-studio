@@ -7,6 +7,20 @@ import { STARTER_TEMPLATES } from '../utils/constants';
 interface WorkspaceContextType {
   view: 'dashboard' | 'editor';
   setView: (v: 'dashboard' | 'editor') => void;
+  projectId: string | null;
+  setProjectId: (v: string | null) => void;
+  projectName: string;
+  setProjectName: (v: string) => void;
+  confirmModalOpen: boolean;
+  setConfirmModalOpen: (v: boolean) => void;
+  confirmModalConfig: { title: string; message: string; onConfirm: () => void } | null;
+  setConfirmModalConfig: (v: { title: string; message: string; onConfirm: () => void } | null) => void;
+  showConfirm: (title: string, message: string, onConfirm: () => void) => void;
+  saveModalOpen: boolean;
+  setSaveModalOpen: (v: boolean) => void;
+  saveModalConfig: { initialName: string; onSave: (name: string) => void } | null;
+  setSaveModalConfig: (v: { initialName: string; onSave: (name: string) => void } | null) => void;
+  showSaveModal: (initialName: string, onSave: (name: string) => void) => void;
   brandName: string;
   setBrandName: (v: string) => void;
   niche: string;
@@ -91,12 +105,40 @@ interface WorkspaceContextType {
   handleLoadDraftSnapshot: (draft: SavedDraft) => Promise<void>;
   handleDeleteDraftSnapshot: (id: string, name: string) => Promise<void>;
   handleStartFreshWorkspace: () => Promise<void>;
+  startBlankProject: (size: 'portrait' | 'square') => void;
+  startTemplateProject: (template: StarterTemplate) => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
 export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [view, setView] = useState<'dashboard' | 'editor'>('dashboard');
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState<string>('');
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [saveModalConfig, setSaveModalConfig] = useState<{
+    initialName: string;
+    onSave: (name: string) => void;
+  } | null>(null);
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModalConfig({ title, message, onConfirm });
+    setConfirmModalOpen(true);
+  };
+
+  const showSaveModal = (initialName: string, onSave: (name: string) => void) => {
+    setSaveModalConfig({ initialName, onSave });
+    setSaveModalOpen(true);
+  };
+
   const [brandName, setBrandName] = useState('prompts.page');
   const [niche, setNiche] = useState('AI Creative Studio');
   const [accentColor, setAccentColor] = useState('#C8A97E');
@@ -186,105 +228,240 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setGeneratedCaption('');
   };
 
-  // Restore state from IndexedDB active_draft & load saved drafts on mount
+  const startBlankProject = (size: 'portrait' | 'square') => {
+    const newId = Date.now().toString();
+    setProjectId(newId);
+    setProjectName(`Untitled ${size === 'portrait' ? 'Portrait' : 'Square'}`);
+    setBrandName('mybrand.co');
+    setNiche('Creative Agency');
+    setAccentColor('#C8A97E');
+    setFontStyle('editorial');
+    setImages([]);
+    setCarouselSize(size);
+
+    const initialSlides: Slide[] = [
+      {
+        id: 'cover',
+        type: 'cover',
+        headingText: 'How to Build Something Awesome'
+      },
+      {
+        id: 'slide-1',
+        type: 'keyword',
+        keywords: ['STEP 1'],
+        headingText: 'Start with a plan',
+        subText: 'Write down the key concepts you want to communicate in your carousel...'
+      },
+      {
+        id: 'cta',
+        type: 'cta',
+        headingText: 'Get the full guide sent directly to your DMs',
+        ctaLayout: 'comment',
+        triggerWord: 'START'
+      }
+    ];
+
+    setSlides(initialSlides);
+    setCurrentSlide(0);
+    setGradientHeight(75);
+    setFontSize(25);
+    setBottomPadding(5);
+    setShowWordmark(true);
+    setShowCoverSlide(true);
+    setShowRevealSlide(false);
+    setCoverHeading('How to Build Something Awesome');
+    setAiPrompt('');
+    setTopic('');
+    setSelectedHookText('');
+    setSuggestedHooks([]);
+    setGeneratedCaption('');
+    setLogoUrl(null);
+    setLogoMode('text');
+    setLogoWidth(24);
+    setLogoOpacity(100);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', 'editor');
+    url.searchParams.set('id', newId);
+    window.history.pushState(null, '', url.toString());
+
+    setView('editor');
+    toast.success('Started a new blank project!');
+  };
+
+  const startTemplateProject = (template: StarterTemplate) => {
+    const newId = Date.now().toString();
+    setProjectId(newId);
+    setProjectName(template.name);
+    
+    setBrandName(template.brandName);
+    setNiche(template.niche);
+    setAccentColor(template.accentColor);
+    setFontStyle(template.fontStyle);
+    setImages([]);
+    setSlides(JSON.parse(JSON.stringify(template.slides)));
+    setCurrentSlide(0);
+    setCarouselSize(template.carouselSize);
+
+    setGradientHeight(75);
+    setFontSize(25);
+    setBottomPadding(5);
+    setShowWordmark(true);
+    setShowCoverSlide(true);
+    setShowRevealSlide(template.slides.some(s => s.type === 'reveal'));
+    setCoverHeading(template.slides.find(s => s.type === 'cover')?.headingText ?? '');
+    setAiPrompt(template.slides.find(s => s.type === 'reveal')?.headingText ?? '');
+
+    setTopic('');
+    setSelectedHookText('');
+    setSuggestedHooks([]);
+    setGeneratedCaption('');
+    setLogoUrl(null);
+    setLogoMode('text');
+    setLogoWidth(24);
+    setLogoOpacity(100);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', 'editor');
+    url.searchParams.set('id', newId);
+    window.history.pushState(null, '', url.toString());
+
+    setView('editor');
+    toast.success(`Loaded template "${template.name}"!`);
+  };
+
+  // Synchronize state with URL query parameters
   useEffect(() => {
-    const restoreState = async () => {
-      try {
-        const saved = await draftDb.getActive();
-        if (saved && saved.slides && saved.slides.length > 0) {
-          setBrandName(saved.brandName ?? '');
-          setNiche(saved.niche ?? '');
-          setAccentColor(saved.accentColor ?? '#C8A97E');
-          setFontStyle(saved.fontStyle ?? 'editorial');
-          if (saved.images) {
-            setImages(saved.images.map((img: any) => ({
-              id: img.id || Math.random().toString(),
-              url: img.url,
-              name: img.name || '',
-              file: null as any
-            })));
+    const syncWithUrl = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const pageParam = searchParams.get('page') || 'dashboard';
+      const idParam = searchParams.get('id');
+
+      if (pageParam === 'editor' && idParam) {
+        if (idParam !== projectId) {
+          try {
+            const draft = await draftDb.getDraft(idParam);
+            if (draft && draft.state) {
+              const saved = draft.state;
+              setProjectId(draft.id);
+              setProjectName(draft.name);
+              setBrandName(saved.brandName ?? '');
+              setNiche(saved.niche ?? '');
+              setAccentColor(saved.accentColor ?? '#C8A97E');
+              setFontStyle(saved.fontStyle ?? 'editorial');
+              if (saved.images) {
+                setImages(saved.images.map((img: any) => ({
+                  id: img.id || Math.random().toString(),
+                  url: img.url,
+                  name: img.name || '',
+                  file: null as any
+                })));
+              }
+              setSlides(saved.slides ?? []);
+              setCurrentSlide(saved.currentSlide ?? 0);
+              setCarouselSize(saved.carouselSize ?? 'portrait');
+              setGradientHeight(saved.gradientHeight ?? 75);
+              setFontSize(saved.fontSize ?? 25);
+              setBottomPadding(saved.bottomPadding ?? 5);
+              setShowWordmark(saved.showWordmark ?? true);
+              setShowCoverSlide(saved.showCoverSlide ?? true);
+              setShowRevealSlide(saved.showRevealSlide ?? true);
+              setCoverHeading(saved.coverHeading ?? '');
+              setAiPrompt(saved.aiPrompt ?? '');
+              setLogoUrl(saved.logoUrl ?? null);
+              setLogoMode(saved.logoMode ?? 'text');
+              setLogoWidth(saved.logoWidth ?? 24);
+              setLogoOpacity(saved.logoOpacity ?? 100);
+              setTopic(saved.topic ?? '');
+              setSelectedHookText(saved.selectedHookText ?? '');
+              setSuggestedHooks(saved.suggestedHooks ?? []);
+              setGeneratedCaption(saved.generatedCaption ?? '');
+              setViewMode(saved.viewMode ?? 'single');
+              setView('editor');
+            } else {
+              toast.error('Project not found in drafts.');
+              const url = new URL(window.location.href);
+              url.searchParams.delete('page');
+              url.searchParams.delete('id');
+              window.history.pushState(null, '', url.toString());
+              setView('dashboard');
+            }
+          } catch (e) {
+            console.error('Failed to load project from URL ID:', e);
           }
-          setSlides(saved.slides ?? []);
-          setCurrentSlide(saved.currentSlide ?? 0);
-          setCarouselSize(saved.carouselSize ?? 'portrait');
-          setGradientHeight(saved.gradientHeight ?? 75);
-          setFontSize(saved.fontSize ?? 25);
-          setBottomPadding(saved.bottomPadding ?? 5);
-          setShowWordmark(saved.showWordmark ?? true);
-          setShowCoverSlide(saved.showCoverSlide ?? true);
-          setShowRevealSlide(saved.showRevealSlide ?? true);
-          setCoverHeading(saved.coverHeading ?? '');
-          setAiPrompt(saved.aiPrompt ?? '');
-          setLogoUrl(saved.logoUrl ?? null);
-          setLogoMode(saved.logoMode ?? 'text');
-          setLogoWidth(saved.logoWidth ?? 24);
-          setLogoOpacity(saved.logoOpacity ?? 100);
         } else {
-          setSlides([]);
+          setView('editor');
         }
-      } catch (e) {
-        console.warn('Failed to restore active draft state', e);
-        setSlides([]);
+      } else if (pageParam === 'editor') {
+        // Redirect to dashboard if no ID is specified
+        const url = new URL(window.location.href);
+        url.searchParams.delete('page');
+        window.history.pushState(null, '', url.toString());
+        setView('dashboard');
+      } else {
+        setView('dashboard');
       }
     };
-    restoreState();
+
+    syncWithUrl();
+
+    const handlePopState = () => {
+      syncWithUrl();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [projectId]);
+
+  useEffect(() => {
     loadSavedDraftsList();
   }, []);
 
-  // Autosave active state to IndexedDB active_draft
+  // Keep slide image URLs in sync with uploaded images array in sequence
   useEffect(() => {
-    const saveActiveState = async () => {
-      if (slides.length === 0) return;
-      try {
-        const stateToSave = {
-          brandName,
-          niche,
-          accentColor,
-          fontStyle,
-          images: images.map(img => ({ id: img.id, url: img.url, name: img.name || img.file?.name })),
-          slides,
-          currentSlide,
-          carouselSize,
-          gradientHeight,
-          fontSize,
-          bottomPadding,
-          showWordmark,
-          showCoverSlide,
-          showRevealSlide,
-          coverHeading,
-          aiPrompt,
-          logoUrl,
-          logoMode,
-          logoWidth,
-          logoOpacity
-        };
-        await draftDb.saveActive(stateToSave);
-      } catch (e) {
-        console.warn('Autosave failed:', e);
+    console.log('[WorkspaceContext] useEffect triggered with images:', images.map(img => img.name || img.id), 'slides.length:', slides.length);
+    setSlides(prevSlides => {
+      let changed = false;
+      let updatedSlides = [...prevSlides];
+
+      // If we have more images than slides, expand slides to match
+      if (images.length > updatedSlides.length) {
+        const needed = images.length - updatedSlides.length;
+        const ctaIndex = updatedSlides.findIndex(s => s.type === 'cta');
+        
+        const newSlidesToInsert: Slide[] = Array.from({ length: needed }, (_, i) => ({
+          id: `slide-added-${Date.now()}-${Math.random().toString(36).substring(2, 6)}-${i}`,
+          type: 'keyword',
+          headingText: 'Swipe to see more',
+          keywords: [`STEP ${updatedSlides.length + i + 1}`]
+        }));
+
+        if (ctaIndex !== -1) {
+          updatedSlides.splice(ctaIndex, 0, ...newSlidesToInsert);
+        } else {
+          updatedSlides.push(...newSlidesToInsert);
+        }
+        changed = true;
+        console.log(`[WorkspaceContext] Expanded slides by ${needed} to match image count of ${images.length}`);
       }
-    };
-    saveActiveState();
-  }, [
-    brandName,
-    niche,
-    accentColor,
-    fontStyle,
-    images,
-    slides,
-    currentSlide,
-    carouselSize,
-    gradientHeight,
-    fontSize,
-    bottomPadding,
-    showWordmark,
-    showCoverSlide,
-    showRevealSlide,
-    coverHeading,
-    aiPrompt,
-    logoUrl,
-    logoMode,
-    logoWidth,
-      ]);
+
+      const newSlides = updatedSlides.map((slide, idx) => {
+        const expectedUrl = images.length > 0 ? (images[idx % images.length]?.url || '') : '';
+        if (slide.imageUrl !== expectedUrl) {
+          changed = true;
+          console.log(`[WorkspaceContext] Syncing slide ${idx} image from "${slide.imageUrl ? slide.imageUrl.substring(0, 30) + '...' : 'none'}" to "${expectedUrl ? expectedUrl.substring(0, 30) + '...' : 'none'}"`);
+          return { ...slide, imageUrl: expectedUrl };
+        }
+        return slide;
+      });
+
+      if (changed) {
+        console.log('[WorkspaceContext] slides state changed, updating slides');
+        return newSlides;
+      }
+      return prevSlides;
+    });
+  }, [images, slides.length]);
 
   const handleSaveDraftSnapshot = async () => {
     if (slides.length === 0) {
@@ -292,59 +469,70 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const id = Date.now().toString();
-    const timestamp = Date.now();
-    const name = topic.trim()
+    const defaultName = projectName || (topic.trim()
       ? `Draft: ${topic.slice(0, 25)}${topic.length > 25 ? '...' : ''}`
-      : `Draft: ${brandName} (${slides.length} slides)`;
+      : `Draft: ${brandName} (${slides.length} slides)`);
 
-    const thumbnailUrl = images[0]?.url || undefined;
+    showSaveModal(defaultName, async (chosenName) => {
+      const id = projectId || Date.now().toString();
+      const timestamp = Date.now();
+      const name = chosenName.trim() || defaultName;
+      const thumbnailUrl = images[0]?.url || undefined;
 
-    const stateToSave = {
-      brandName,
-      niche,
-      accentColor,
-      fontStyle,
-      images: images.map(img => ({ id: img.id, url: img.url, name: img.name || img.file?.name })),
-      slides,
-      currentSlide,
-      gradientHeight,
-      fontSize,
-      bottomPadding,
-      showWordmark,
-      showCoverSlide,
-      showRevealSlide,
-      coverHeading,
-      aiPrompt,
-      topic,
-      selectedHookText,
-      suggestedHooks,
-      generatedCaption,
-      viewMode,
-      carouselSize,
-      logoUrl,
-      logoMode,
-      logoWidth,
-      logoOpacity
-    };
+      const stateToSave = {
+        brandName,
+        niche,
+        accentColor,
+        fontStyle,
+        images: images.map(img => ({ id: img.id, url: img.url, name: img.name || img.file?.name })),
+        slides,
+        currentSlide,
+        gradientHeight,
+        fontSize,
+        bottomPadding,
+        showWordmark,
+        showCoverSlide,
+        showRevealSlide,
+        coverHeading,
+        aiPrompt,
+        topic,
+        selectedHookText,
+        suggestedHooks,
+        generatedCaption,
+        viewMode,
+        carouselSize,
+        logoUrl,
+        logoMode,
+        logoWidth,
+        logoOpacity
+      };
 
-    const draft: SavedDraft = {
-      id,
-      timestamp,
-      name,
-      slideCount: slides.length,
-      thumbnailUrl,
-      state: stateToSave
-    };
+      const draft: SavedDraft = {
+        id,
+        timestamp,
+        name,
+        slideCount: slides.length,
+        thumbnailUrl,
+        state: stateToSave
+      };
 
-    try {
-      await draftDb.saveDraft(draft);
-      toast.success('Project draft saved successfully!');
-      loadSavedDraftsList();
-    } catch (err) {
-      console.error('Failed to save draft snapshot:', err);
-      toast.error('Failed to save draft.');
-    }
+      try {
+        await draftDb.saveDraft(draft);
+        setProjectId(id);
+        setProjectName(name);
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', 'editor');
+        url.searchParams.set('id', id);
+        window.history.pushState(null, '', url.toString());
+
+        toast.success(`Project "${name}" saved successfully!`);
+        loadSavedDraftsList();
+      } catch (err) {
+        console.error('Failed to save draft snapshot:', err);
+        toast.error('Failed to save draft.');
+      }
+    });
   };
 
   const handleLoadDraftSnapshot = async (draft: SavedDraft) => {
@@ -352,6 +540,8 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!saved) return;
 
     try {
+      setProjectId(draft.id);
+      setProjectName(draft.name);
       setBrandName(saved.brandName ?? '');
       setNiche(saved.niche ?? '');
       setAccentColor(saved.accentColor ?? '#C8A97E');
@@ -385,9 +575,14 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setLogoWidth(saved.logoWidth ?? 24);
       setLogoOpacity(saved.logoOpacity ?? 100);
 
-      await draftDb.saveActive(saved);
+      const url = new URL(window.location.href);
+      url.searchParams.set('page', 'editor');
+      url.searchParams.set('id', draft.id);
+      window.history.pushState(null, '', url.toString());
+
       toast.success(`Draft "${draft.name}" loaded!`);
       setDraftsModalOpen(false);
+      setView('editor');
     } catch (err) {
       console.error('Failed to load draft:', err);
       toast.error('Failed to load draft.');
@@ -395,47 +590,75 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const handleDeleteDraftSnapshot = async (id: string, name: string) => {
-    try {
-      await draftDb.deleteDraft(id);
-      toast.success(`Draft "${name}" deleted.`);
-      loadSavedDraftsList();
-    } catch (err) {
-      console.error('Failed to delete draft:', err);
-      toast.error('Failed to delete draft.');
-    }
+    showConfirm(
+      'Delete Project',
+      `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      async () => {
+        try {
+          await draftDb.deleteDraft(id);
+          toast.success(`Draft "${name}" deleted.`);
+          
+          if (id === projectId) {
+            setProjectId(null);
+            setProjectName('');
+            setSlides([]);
+            const url = new URL(window.location.href);
+            url.searchParams.delete('page');
+            url.searchParams.delete('id');
+            window.history.pushState(null, '', url.toString());
+            setView('dashboard');
+          }
+          
+          loadSavedDraftsList();
+        } catch (err) {
+          console.error('Failed to delete draft:', err);
+          toast.error('Failed to delete draft.');
+        }
+      }
+    );
   };
 
   const handleStartFreshWorkspace = async () => {
-    if (!confirm('Are you sure you want to clear the workspace and start fresh? All unsaved work will be lost.')) {
-      return;
-    }
+    showConfirm(
+      'Clear Workspace',
+      'Are you sure you want to clear the workspace and start fresh? All unsaved work will be lost.',
+      async () => {
+        try {
+          await draftDb.clearActive();
 
-    try {
-      await draftDb.clearActive();
+          setBrandName('prompts.page');
+          setNiche('AI Creative Studio');
+          setAccentColor('#C8A97E');
+          setFontStyle('editorial');
+          setImages([]);
+          setSlides([]);
+          setCurrentSlide(0);
+          setCoverHeading('5 Secret Lighting Prompts');
+          setAiPrompt('');
+          setTopic('');
+          setSelectedHookText('');
+          setSuggestedHooks([]);
+          setGeneratedCaption('');
+          setViewMode('single');
+          setCarouselSize('portrait');
+          setProjectId(null);
+          setProjectName('');
 
-      setBrandName('prompts.page');
-      setNiche('AI Creative Studio');
-      setAccentColor('#C8A97E');
-      setFontStyle('editorial');
-      setImages([]);
-      setSlides([]);
-      setCurrentSlide(0);
-      setCoverHeading('5 Secret Lighting Prompts');
-      setAiPrompt('');
-      setTopic('');
-      setSelectedHookText('');
-      setSuggestedHooks([]);
-      setGeneratedCaption('');
-      setViewMode('single');
-      setCarouselSize('portrait');
-
-      toast.success('Workspace cleared!');
-      setView('dashboard');
-      setDraftsModalOpen(false);
-    } catch (err) {
-      console.error('Failed to clear workspace:', err);
-      toast.error('Failed to start fresh.');
-    }
+          toast.success('Workspace cleared!');
+          
+          const url = new URL(window.location.href);
+          url.searchParams.delete('page');
+          url.searchParams.delete('id');
+          window.history.pushState(null, '', url.toString());
+          
+          setView('dashboard');
+          setDraftsModalOpen(false);
+        } catch (err) {
+          console.error('Failed to clear workspace:', err);
+          toast.error('Failed to start fresh.');
+        }
+      }
+    );
   };
 
   return (
@@ -443,6 +666,20 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       value={{
         view,
         setView,
+        projectId,
+        setProjectId,
+        projectName,
+        setProjectName,
+        confirmModalOpen,
+        setConfirmModalOpen,
+        confirmModalConfig,
+        setConfirmModalConfig,
+        showConfirm,
+        saveModalOpen,
+        setSaveModalOpen,
+        saveModalConfig,
+        setSaveModalConfig,
+        showSaveModal,
         brandName,
         setBrandName,
         niche,
@@ -526,7 +763,9 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         handleSaveDraftSnapshot,
         handleLoadDraftSnapshot,
         handleDeleteDraftSnapshot,
-        handleStartFreshWorkspace
+        handleStartFreshWorkspace,
+        startBlankProject,
+        startTemplateProject
       }}
     >
       {children}

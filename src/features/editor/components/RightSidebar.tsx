@@ -541,6 +541,29 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
                   />
                 </div>
 
+                {/* Opacity */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[11px] text-white/60">
+                    <span>Background Opacity</span>
+                    <span>{currentSlideData.imageOpacity ?? 100}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={currentSlideData.imageOpacity ?? 100}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      const newSlides = [...slides];
+                      newSlides[currentSlide].imageOpacity = val;
+                      setSlides(newSlides);
+                    }}
+                    className="w-full"
+                    style={{ accentColor }}
+                  />
+                </div>
+
                 {/* Rotation */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px] text-white/60">
@@ -676,6 +699,47 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
                   </button>
                 </div>
 
+                {/* Fit Mode */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] text-white/60">
+                    <span>Fit / Scale Mode</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const newSlides = [...slides];
+                        newSlides[currentSlide].imageFit = 'cover';
+                        setSlides(newSlides);
+                        toast.success('Sizing set to Crop to Fill');
+                      }}
+                      className="flex-1 py-1.5 text-[10px] font-bold rounded border transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer"
+                      style={{
+                        backgroundColor: (currentSlideData.imageFit || 'cover') === 'cover' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.02)',
+                        borderColor: (currentSlideData.imageFit || 'cover') === 'cover' ? accentColor : 'rgba(255,255,255,0.07)',
+                        color: (currentSlideData.imageFit || 'cover') === 'cover' ? accentColor : 'rgba(255,255,255,0.6)'
+                      }}
+                    >
+                      Fill (Crop)
+                    </button>
+                    <button
+                      onClick={() => {
+                        const newSlides = [...slides];
+                        newSlides[currentSlide].imageFit = 'contain';
+                        setSlides(newSlides);
+                        toast.success('Sizing set to Fit Entire Image');
+                      }}
+                      className="flex-1 py-1.5 text-[10px] font-bold rounded border transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer"
+                      style={{
+                        backgroundColor: currentSlideData.imageFit === 'contain' ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.02)',
+                        borderColor: currentSlideData.imageFit === 'contain' ? accentColor : 'rgba(255,255,255,0.07)',
+                        color: currentSlideData.imageFit === 'contain' ? accentColor : 'rgba(255,255,255,0.6)'
+                      }}
+                    >
+                      Fit (No Crop)
+                    </button>
+                  </div>
+                </div>
+
                 {/* Reset Button */}
                 <button
                   onClick={() => {
@@ -686,6 +750,8 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
                     newSlides[currentSlide].imagePanY = 0;
                     newSlides[currentSlide].imageFlipH = false;
                     newSlides[currentSlide].imageFlipV = false;
+                    newSlides[currentSlide].imageFit = 'cover';
+                    newSlides[currentSlide].imageOpacity = 100;
                     setSlides(newSlides);
                     toast.success('Adjustments reset');
                   }}
