@@ -81,12 +81,28 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-lg">
-              C
-            </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#C8A97E"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-7 h-7 flex-shrink-0"
+            >
+              <rect x="2" y="7" width="10" height="12" rx="1.5" strokeOpacity="0.35" />
+              <rect x="6" y="5" width="10" height="12" rx="1.5" strokeOpacity="0.65" />
+              <rect x="10" y="3" width="10" height="12" rx="1.5" />
+              <path
+                d="M15 6.5Q15 9 17.5 9Q15 9 15 11.5Q15 9 12.5 9Q15 9 15 6.5z"
+                fill="#C8A97E"
+                stroke="none"
+              />
+            </svg>
             <div>
               <h1 className="text-sm font-bold text-white tracking-wider uppercase" style={{ fontFamily: 'NeueKabelBold, sans-serif' }}>
-                Carousel Studio
+                AI Carousel Design
               </h1>
               <p className="text-[10px] text-white/45 tracking-widest uppercase">prompts.page · PRO</p>
             </div>

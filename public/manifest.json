@@ -1,0 +1,24 @@
+{
+  "name": "AI Carousel Design",
+  "short_name": "AI Carousel Design",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#0B0B0A",
+  "background_color": "#0B0B0A",
+  "display": "standalone"
+}
