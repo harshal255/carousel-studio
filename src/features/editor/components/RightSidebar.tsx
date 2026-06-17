@@ -244,7 +244,7 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
             ...s,
             type: u.type || s.type,
             keywords: u.keywords || s.keywords,
-            headingText: u.headingText || s.headingText,
+            headingText: s.type === 'reveal' ? aiPrompt : (u.headingText || s.headingText),
             triggerWord: u.triggerWord || s.triggerWord
           };
         });

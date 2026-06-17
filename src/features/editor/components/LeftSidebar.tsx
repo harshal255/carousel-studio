@@ -462,7 +462,7 @@ There are ${images.length} images uploaded.
 You must generate exactly ${totalExpectedSlides} slides in the 'slides' array:
 1. Slide 1 (type: "cover"): Hook title about the topic (max 10 words). Maps to image 1.
 2. Slides 2 to ${totalExpectedSlides - 1} (type: "keyword"): Generate exactly ${keywordCount} storytelling/keyword slides. Each slide must explain a unique key aesthetic term or style from the images/topic, matching the progression of intermediate images.
-${hasPrompt ? `3. Slide ${totalExpectedSlides} (type: "reveal"): Holds a professionally optimized, highly detailed image generation prompt created based on the user's input/theme. This prompt must be written in a structured manner, specifying visual elements, lighting styles (e.g. dramatic lighting, cinematic, soft glow), camera lens/focus details, analog grain/textures, color grading parameters, and aspect ratio/tokens tailored for the selected AI Generator Tool ("${aiTool}"). Use this optimized prompt as the 'headingText' of this slide.` : ''}
+${hasPrompt ? `3. Slide ${totalExpectedSlides} (type: "reveal"): Holds the user's exact AI Prompt. You must use the user's original AI Prompt "${aiPrompt}" verbatim without altering, optimizing, or trimming it. Set this exact prompt as the 'headingText' of this slide.` : ''}
 ${hasPrompt ? `4. (CTA slide: keep this JSON to exactly ${totalExpectedSlides} slides matching the images, ending with type "cta").` : `3. (CTA slide: keep this JSON to exactly ${totalExpectedSlides} slides matching the images, ending with type "cta").`}
 
 Follow these STRICT rules for the slide contents (prompts.page v2.7 guidelines):
@@ -494,7 +494,7 @@ Return ONLY a raw JSON object matching this TypeScript structure:
     // Exactly ${keywordCount} keyword slides
     { "type": "keyword", "keywords": ["term1"], "headingText": "Punchy bold statement", "subText": "Detailed explanation of the term", "imageName": "filename of corresponding Image" },
     ...
-    ${hasPrompt ? `{ "type": "reveal", "headingText": "The fully optimized, structured image generation prompt template containing camera specs, style tokens, and details.", "imageName": null },` : ''}
+    ${hasPrompt ? `{ "type": "reveal", "headingText": "${aiPrompt.replace(/"/g, '\\"')}", "imageName": null },` : ''}
     { "type": "cta", "headingText": "${hasPrompt ? 'Comment below to get this prompt' : 'Comment below to get this guide/cheatsheet'}", "triggerWord": "UPPERCASE_WORD", "imageName": null }
   ]
 }
@@ -582,7 +582,7 @@ Do not wrap the output in markdown code blocks. Return only the raw JSON.
           id: `slide-${idx}-${Math.random().toString(36).substring(2, 6)}`,
           type: s.type,
           keywords: s.keywords || [],
-          headingText: s.headingText,
+          headingText: s.type === 'reveal' ? aiPrompt : s.headingText,
           subText: s.subText,
           triggerWord: s.triggerWord,
           imageUrl

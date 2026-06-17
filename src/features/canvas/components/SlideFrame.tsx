@@ -250,6 +250,16 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
 
     return null;
   };
+  const zoom = slide.imageZoom ?? 1;
+  const panX = slide.imagePanX ?? 0;
+  const panY = slide.imagePanY ?? 0;
+
+  // Calculate translation based on zoom to allow panning within zoomed area without exposing borders
+  const translateX = panX * (zoom - 1) / 2;
+  const translateY = panY * (zoom - 1) / 2;
+
+  const objPositionX = Math.max(0, Math.min(100, 50 - panX));
+  const objPositionY = Math.max(0, Math.min(100, 50 - panY));
 
   return (
     <div
@@ -282,9 +292,9 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
               src={slide.imageUrl}
               className={`absolute inset-0 w-full h-full object-${slide.imageFit || 'cover'} pointer-events-none`}
               style={{
-                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) rotate(${slide.imageRotate ?? 0}deg)`,
+                transform: `scale(${zoom}) translate(${translateX}%, ${translateY}%) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) rotate(${slide.imageRotate ?? 0}deg)`,
                 transformOrigin: 'center center',
-                objectPosition: `${50 - (slide.imagePanX ?? 0)}% ${50 - (slide.imagePanY ?? 0)}%`,
+                objectPosition: `${objPositionX}% ${objPositionY}%`,
                 opacity: (slide.imageOpacity ?? 100) / 100
               }}
               autoPlay
@@ -298,9 +308,9 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
               alt=""
               className={`absolute inset-0 w-full h-full object-${slide.imageFit || 'cover'} pointer-events-none`}
               style={{
-                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) rotate(${slide.imageRotate ?? 0}deg)`,
+                transform: `scale(${zoom}) translate(${translateX}%, ${translateY}%) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) rotate(${slide.imageRotate ?? 0}deg)`,
                 transformOrigin: 'center center',
-                objectPosition: `${50 - (slide.imagePanX ?? 0)}% ${50 - (slide.imagePanY ?? 0)}%`,
+                objectPosition: `${objPositionX}% ${objPositionY}%`,
                 opacity: (slide.imageOpacity ?? 100) / 100
               }}
             />
