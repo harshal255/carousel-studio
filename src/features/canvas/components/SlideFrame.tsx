@@ -282,8 +282,9 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
               src={slide.imageUrl}
               className={`absolute inset-0 w-full h-full object-${slide.imageFit || 'cover'} pointer-events-none`}
               style={{
-                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
+                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) rotate(${slide.imageRotate ?? 0}deg)`,
                 transformOrigin: 'center center',
+                objectPosition: `${50 - (slide.imagePanX ?? 0)}% ${50 - (slide.imagePanY ?? 0)}%`,
                 opacity: (slide.imageOpacity ?? 100) / 100
               }}
               autoPlay
@@ -297,8 +298,9 @@ export const SlideFrame: React.FC<SlideFrameProps> = ({
               alt=""
               className={`absolute inset-0 w-full h-full object-${slide.imageFit || 'cover'} pointer-events-none`}
               style={{
-                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) translate(${slide.imagePanX ?? 0}%, ${slide.imagePanY ?? 0}%) rotate(${slide.imageRotate ?? 0}deg)`,
+                transform: `scale(${slide.imageZoom ?? 1}) scaleX(${slide.imageFlipH ? -1 : 1}) scaleY(${slide.imageFlipV ? -1 : 1}) rotate(${slide.imageRotate ?? 0}deg)`,
                 transformOrigin: 'center center',
+                objectPosition: `${50 - (slide.imagePanX ?? 0)}% ${50 - (slide.imagePanY ?? 0)}%`,
                 opacity: (slide.imageOpacity ?? 100) / 100
               }}
             />
